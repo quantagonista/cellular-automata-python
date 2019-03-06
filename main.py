@@ -1,34 +1,42 @@
-from tkinter import *
+import tkinter as tk
 
+from constants import SEED_INPUT_LABEL
 from models.automates.crystal import Crystal
 from models.field import Field
 from utils import colors
 
 
-class App(Frame):
+class App(tk.Frame):
     def __init__(self, master, *args, **kwargs):
         super().__init__(master=master, *args, **kwargs)
         self.root = master
-        self.root.geometry("700x500")
+        self.width = 700
+        self.height = 500
 
-        self.next_step_button = Button(master=self.root, text='Next Step', command=self.next_step)
-        self.next_step_button.pack()
+        self.root.geometry("{}x{}".format(self.width, self.height))
+        self.root.resizable(False, False)
 
-        self.automate_seed_entry = Entry()
+        self.automate_seed_entry_label = tk.Label(self.root, text=SEED_INPUT_LABEL)
+        self.automate_seed_entry_label.place(x=20)
+
+        self.automate_seed_entry = tk.Entry()
         self.automate_seed_entry.bind('<Key-Return>', self.set_drawer)
-        self.automate_seed_entry.pack()
+        self.automate_seed_entry.pack(fill=tk.BOTH)
+
+        self.next_step_button = tk.Button(master=self.root, text='Next Step', command=self.next_step)
+        self.next_step_button.pack(fill=tk.BOTH)
 
         self.canvas_width = 500
         self.canvas_height = 500
 
-        self.canvas = Canvas(
+        self.canvas = tk.Canvas(
             master=self.root,
             cnf={
                 "width": self.canvas_width,
                 "height": self.canvas_height
             }
         )
-        self.canvas.pack()
+        self.canvas.place(x=self.width - self.canvas_width)
 
         field_width = 100
         field_height = 100
@@ -75,12 +83,13 @@ class App(Frame):
         self.field.apply_state(next_state)
         self.draw_field()
 
-    def get_drawer(self, seed):
+    @staticmethod
+    def get_drawer(seed):
         # TODO: Add dynamic Drawer loading via dropdown menu
         return Crystal(seed)
 
 
 if __name__ == '__main__':
-    root = Tk()
+    root = tk.Tk()
     main = App(root)
     main.mainloop()
