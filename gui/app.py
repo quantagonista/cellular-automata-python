@@ -46,8 +46,7 @@ class App(tk.Frame):
 
         self.drawer = self.get_drawer(501)
         self.redraw_field()
-
-
+        self.update()
 
     def set_drawer(self, _):
         seed = self.automate_seed_entry.get()
