@@ -1,4 +1,7 @@
 import tkinter as tk
+from random import randint
+
+from PIL import Image, ImageTk
 
 from constants import SEED_INPUT_LABEL
 from models.automates.crystal import Crystal
@@ -42,11 +45,13 @@ class App(tk.Frame):
         field_height = 100
         self.field = Field(field_width, field_height, 5)
         self.field.set_cell(field_width // 2, field_height // 2, 1)
-        self.cells = self.get_rectangles()
+        self.image = Image.new('RGB', (800, 800,))
+        self.fill_image()
+        self.image_field = ImageTk.PhotoImage(self.image)
+        self.canvas.create_image(0, 0, image=self.image_field)
+        self.canvas.update()
 
         self.drawer = self.get_drawer(501)
-        self.redraw_field()
-        self.update()
 
     def set_drawer(self, _):
         seed = self.automate_seed_entry.get()
@@ -72,9 +77,13 @@ class App(tk.Frame):
                 self.canvas.itemconfig(rect, fill=color)
 
     def next_step(self):
-        next_state = self.drawer.next_step(self.field)
-        self.field.apply_state(next_state)
-        self.redraw_field()
+        # next_state = self.drawer.next_step(self.field)
+        # self.field.apply_state(next_state)
+        # self.redraw_field()
+        self.fill_image()
+        self.image_field = ImageTk.PhotoImage(self.image)
+        self.canvas.create_image(0, 0, image=self.image_field)
+        self.canvas.update()
 
     @staticmethod
     def get_drawer(seed):
@@ -102,3 +111,13 @@ class App(tk.Frame):
                 )
                 rectangles[y][x] = rectangle
         return rectangles
+
+    def fill_image(self):
+        pixels = self.image.load()
+        color = self.get_random_color()
+        for y in range(self.canvas_height):
+            for x in range(self.canvas_width):
+                pixels[x, y] = color
+
+    def get_random_color(self):
+        return randint(0, 255), randint(0, 255), randint(0, 255)
