@@ -13,8 +13,11 @@ class Crystal(Drawer):
 
         next_state = get_empty_state(width, height)
 
-        for y in range(1, height - 1):
-            for x in range(1, width - 1):
+        h_range = range(1, height - 1)
+        w_range = range(1, width - 1)
+
+        for y in h_range:
+            for x in w_range:
                 current_state = field.get_cell(y, x)
                 neighbours_count = self.get_neighbours_count(field, y, x)
                 next_rule = '{}{}'.format(current_state, neighbours_count)
