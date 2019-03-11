@@ -1,1 +1,1 @@
-SEED_INPUT_LABEL = 'Seed:'
+
