@@ -22,46 +22,9 @@ class App(tk.Frame):
         self.root.geometry("{}x{}".format(self.width, self.height))
         self.root.resizable(False, False)
 
-        self.left_bar = tk.Frame(master=self.root)
-        self.left_bar.pack(side=tk.LEFT)
-
-        self.automate_seed_entry_label = tk.Label(self.left_bar, text=SEED_INPUT_LABEL)
-        self.automate_seed_entry_label.grid()
-
-        self.automate_seed_entry = tk.Entry(self.left_bar)
-        self.automate_seed_entry.bind('<Key-Return>', self.set_drawer)
-        self.automate_seed_entry.grid()
-
-        self.next_step_button = tk.Button(master=self.left_bar, text=NEXT_STEP, command=self.next_step)
-        self.next_step_button.grid()
-
-        self.pause_button_text = tk.StringVar(value=START)
-        self.pause_button = tk.Button(master=self.left_bar, textvariable=self.pause_button_text, command=self.pause)
-        self.pause_button.grid()
-
-        self.screenshot_button_text = tk.StringVar(value=SCREENSHOT)
-        self.screenshot_button = tk.Button(
-            master=self.left_bar, textvariable=self.screenshot_button_text, command=self.screenshot
-        )
-        self.screenshot_button.grid()
-
-        self.canvas_width = 500
-        self.canvas_height = 500
-
-        self.canvas = tk.Canvas(
-            master=self.root,
-            cnf={
-                "width": self.canvas_width,
-                "height": self.canvas_height
-            }
-        )
-        self.canvas.pack(side=tk.RIGHT)  # place(x=self.width - self.canvas_width)
-
-        field_width = 100
-        field_height = 100
-        self.field = Field(field_width, field_height, 5)
-        self.field.set_cell(field_width // 2, field_height // 2, 1)
-        self.cells = self.get_rectangles()
+        self.create_left_bar()
+        self.create_canvas()
+        self.create_field()
 
         self.drawer = self.get_drawer(501)
         self.redraw_field()
@@ -154,3 +117,54 @@ class App(tk.Frame):
             drawer=self.drawer.__class__.__name__,
             date=datetime.today().strftime('%m-%d-%Y')
         )
+
+    def create_left_bar(self):
+        self.left_bar = tk.Frame(master=self.root)
+        self.left_bar.pack(side=tk.LEFT)
+
+        self.automate_seed_entry_label = tk.Label(self.left_bar, text=SEED_INPUT_LABEL)
+        self.automate_seed_entry_label.grid()
+
+        self.automate_seed_entry = tk.Entry(self.left_bar)
+        self.automate_seed_entry.bind('<Key-Return>', self.set_drawer)
+        self.automate_seed_entry.grid()
+
+        self.next_step_button = tk.Button(master=self.left_bar, text=NEXT_STEP, command=self.next_step)
+        self.next_step_button.grid()
+
+        self.pause_button_text = tk.StringVar(value=START)
+        self.pause_button = tk.Button(master=self.left_bar, textvariable=self.pause_button_text, command=self.pause)
+        self.pause_button.grid()
+
+        self.screenshot_button_text = tk.StringVar(value=SCREENSHOT)
+        self.screenshot_button = tk.Button(
+            master=self.left_bar, textvariable=self.screenshot_button_text, command=self.screenshot
+        )
+        self.screenshot_button.grid()
+
+    def create_canvas(self):
+        self.canvas_width = 500
+        self.canvas_height = 500
+
+        self.canvas = tk.Canvas(
+            master=self.root,
+            cnf={
+                "width": self.canvas_width,
+                "height": self.canvas_height
+            }
+        )
+        self.canvas.bind("<Button-1>", self.add_drawer)
+        self.canvas.pack(side=tk.RIGHT)  # place(x=self.width - self.canvas_width)
+
+    def create_field(self):
+        field_width = 100
+        field_height = 100
+        self.field = Field(field_width, field_height, 5)
+        self.field.set_cell(field_width // 2, field_height // 2, 1)
+        self.cells = self.get_rectangles()
+
+    def add_drawer(self, event: tk.Event):
+        x = event.x // self.field.cell_size - 1
+        y = event.y // self.field.cell_size - 1
+        self.field.set_cell(y, x, 1)
+        self.redraw_field()
