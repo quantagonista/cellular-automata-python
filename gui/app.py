@@ -2,6 +2,7 @@ import tkinter as tk
 from random import randint
 
 from PIL import Image, ImageTk
+from PIL.ImageDraw import ImageDraw
 
 from constants import SEED_INPUT_LABEL
 from models.automates.crystal import Crystal
@@ -29,29 +30,32 @@ class App(tk.Frame):
         self.next_step_button = tk.Button(master=self.root, text='Next Step', command=self.next_step)
         self.next_step_button.pack(fill=tk.BOTH)
 
-        self.canvas_width = 500
-        self.canvas_height = 500
+        self.canvas_size = 500
 
         self.canvas = tk.Canvas(
             master=self.root,
             cnf={
-                "width": self.canvas_width,
-                "height": self.canvas_height
+                "width": self.canvas_size,
+                "height": self.canvas_size
             }
         )
-        self.canvas.place(x=self.width - self.canvas_width)
+        self.canvas.place(x=self.width - self.canvas_size)
 
-        field_width = 100
-        field_height = 100
+        field_width = field_height = 100
         self.field = Field(field_width, field_height, 5)
         self.field.set_cell(field_width // 2, field_height // 2, 1)
-        self.image = Image.new('RGB', (800, 800,))
-        self.fill_image()
-        self.image_field = ImageTk.PhotoImage(self.image)
-        self.canvas.create_image(0, 0, image=self.image_field)
+
+        self.image_file = Image.new('RGB', (self.canvas_size, self.canvas_size,), 'red')
+        self.image_file.save('temp.png')
+
+        self.image_drawer = ImageDraw(self.image_file)
+        self.image_canvas = ImageTk.PhotoImage(self.image_file)
+        self.canvas.create_image(0, 0, anchor=tk.NW, image=self.image_canvas)
         self.canvas.update()
+        self.redraw_field()
 
         self.drawer = self.get_drawer(501)
+        # self.update()
 
     def set_drawer(self, _):
         seed = self.automate_seed_entry.get()
@@ -62,7 +66,6 @@ class App(tk.Frame):
 
     def update(self):
         self.next_step()
-        self.redraw_field()
         self.canvas.after(1, self.update)
 
     def redraw_field(self):
@@ -73,51 +76,26 @@ class App(tk.Frame):
         for y in h_range:
             for x in w_range:
                 color = colors.get(self.field.get_cell(y, x))
-                rect = self.cells[y][x]
-                self.canvas.itemconfig(rect, fill=color)
+                self.draw_cell(y, x, color)
 
     def next_step(self):
+        x = randint(0, 500)
+        y = randint(0, 500)
+        self.image_drawer.rectangle((x, y, x + 50, y + 50), fill='white', outline='yellow', width=5)
+        self.image_file.save('temp.png')
+        image_file = Image.open('temp.png')
+        image_canvas = ImageTk.PhotoImage(image_file)
+        self.canvas.create_image(0, 0, anchor=tk.NW, image=image_canvas)
+        self.canvas.update()
         # next_state = self.drawer.next_step(self.field)
         # self.field.apply_state(next_state)
         # self.redraw_field()
-        self.fill_image()
-        self.image_field = ImageTk.PhotoImage(self.image)
-        self.canvas.create_image(0, 0, image=self.image_field)
-        self.canvas.update()
 
     @staticmethod
     def get_drawer(seed):
         # TODO: Add dynamic Drawer loading via dropdown menu
         return Crystal(seed)
 
-    def get_rectangles(self):
-        width = self.field.get_width()
-        height = self.field.get_height()
-        width_range = range(width)
-        height_range = range(height)
-        rectangles = [[None for _ in width_range] for _ in height_range]
-        cell_size = self.field.get_cell_size()
-        for y in range(height):
-            for x in range(width):
-                color = colors.get(self.field.get_cell(y, x))
-                start_x = x * cell_size
-                start_y = y * cell_size
-                rectangle = self.canvas.create_rectangle(
-                    start_x,
-                    start_y,
-                    start_x + cell_size,
-                    start_y + cell_size,
-                    fill=color
-                )
-                rectangles[y][x] = rectangle
-        return rectangles
-
-    def fill_image(self):
-        pixels = self.image.load()
-        color = self.get_random_color()
-        for y in range(self.canvas_height):
-            for x in range(self.canvas_width):
-                pixels[x, y] = color
-
-    def get_random_color(self):
-        return randint(0, 255), randint(0, 255), randint(0, 255)
+    def draw_cell(self, y, x, color):
+        xy = (x, y, x + self.field.cell_size, y + self.field.cell_size)
+        self.image_drawer.rectangle(xy, fill=color)
