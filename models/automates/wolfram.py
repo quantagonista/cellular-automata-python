@@ -24,15 +24,15 @@ class Wolfram(Drawer):
         return new_state
 
     def get_neighbours_count(self, x, y, field):
-        width = len(field[0])
+        width = field.get_width()
 
         top_y = y - 1
         left_x = x - 1
         right_x = x + 1
 
-        top_left = field[top_y][left_x] if (top_y >= 0 and left_x >= 0) else 0
-        top = field[top_y][x] if top_y >= 0 else 0
-        top_right = field[top_y][right_x] if (top_y >= 0 and right_x < width) else 0
+        top_left = field.get_cell(top_y, left_x) if (top_y >= 0 and left_x >= 0) else 0
+        top = field.get_cell(top_y, x) if top_y >= 0 else 0
+        top_right = field.get_cell(top_y, right_x) if (top_y >= 0 and right_x < width) else 0
 
         return top_left + top + top_right
 

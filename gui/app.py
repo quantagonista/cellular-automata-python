@@ -3,12 +3,12 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import filedialog
 
-import pyscreenshot as ImageGrab
+import pyscreenshot as image_grab
 
-from .constants import START, SEED_INPUT_LABEL, PAUSE, SCREENSHOT, NEXT_STEP, DEFAULT_SCREENSHOT_FILENAME
 from models.automates.crystal import Crystal
 from models.field import Field
 from utils import colors
+from .constants import START, SEED_INPUT_LABEL, PAUSE, SCREENSHOT, NEXT_STEP
 
 
 class App(tk.Frame):
@@ -110,7 +110,7 @@ class App(tk.Frame):
         y = self.root.winfo_rooty() + self.canvas.winfo_y()
         x1 = x + self.canvas.winfo_width()
         y1 = y + self.canvas.winfo_height()
-        ImageGrab.grab().crop((x, y, x1, y1)).save(path)
+        image_grab.grab().crop((x, y, x1, y1)).save(path)
 
     def get_screenshot_filename(self):
         return '{drawer}-{date}.png'.format(
