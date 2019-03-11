@@ -1,0 +1,6 @@
+START = 'Start'
+PAUSE = 'Pause'
+SEED_INPUT_LABEL = 'Seed:'
+SCREENSHOT = 'Take a screenshot'
+NEXT_STEP = 'Next Step'
+DEFAULT_SCREENSHOT_FILENAME = 'screenshot.png'

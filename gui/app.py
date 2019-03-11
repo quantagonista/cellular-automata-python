@@ -1,6 +1,11 @@
+import os
 import tkinter as tk
+from datetime import datetime
+from tkinter import filedialog
 
-from constants import SEED_INPUT_LABEL
+import pyscreenshot as ImageGrab
+
+from .constants import START, SEED_INPUT_LABEL, PAUSE, SCREENSHOT, NEXT_STEP, DEFAULT_SCREENSHOT_FILENAME
 from models.automates.crystal import Crystal
 from models.field import Field
 from utils import colors
@@ -9,6 +14,7 @@ from utils import colors
 class App(tk.Frame):
     def __init__(self, master, *args, **kwargs):
         super().__init__(master=master, *args, **kwargs)
+        self.is_paused = True
         self.root = master
         self.width = 700
         self.height = 500
@@ -16,15 +22,28 @@ class App(tk.Frame):
         self.root.geometry("{}x{}".format(self.width, self.height))
         self.root.resizable(False, False)
 
-        self.automate_seed_entry_label = tk.Label(self.root, text=SEED_INPUT_LABEL)
-        self.automate_seed_entry_label.place(x=20)
+        self.left_bar = tk.Frame(master=self.root)
+        self.left_bar.pack(side=tk.LEFT)
 
-        self.automate_seed_entry = tk.Entry()
+        self.automate_seed_entry_label = tk.Label(self.left_bar, text=SEED_INPUT_LABEL)
+        self.automate_seed_entry_label.grid()
+
+        self.automate_seed_entry = tk.Entry(self.left_bar)
         self.automate_seed_entry.bind('<Key-Return>', self.set_drawer)
-        self.automate_seed_entry.pack(fill=tk.BOTH)
+        self.automate_seed_entry.grid()
 
-        self.next_step_button = tk.Button(master=self.root, text='Next Step', command=self.next_step)
-        self.next_step_button.pack(fill=tk.BOTH)
+        self.next_step_button = tk.Button(master=self.left_bar, text=NEXT_STEP, command=self.next_step)
+        self.next_step_button.grid()
+
+        self.pause_button_text = tk.StringVar(value=START)
+        self.pause_button = tk.Button(master=self.left_bar, textvariable=self.pause_button_text, command=self.pause)
+        self.pause_button.grid()
+
+        self.screenshot_button_text = tk.StringVar(value=SCREENSHOT)
+        self.screenshot_button = tk.Button(
+            master=self.left_bar, textvariable=self.screenshot_button_text, command=self.screenshot
+        )
+        self.screenshot_button.grid()
 
         self.canvas_width = 500
         self.canvas_height = 500
@@ -36,7 +55,7 @@ class App(tk.Frame):
                 "height": self.canvas_height
             }
         )
-        self.canvas.place(x=self.width - self.canvas_width)
+        self.canvas.pack(side=tk.RIGHT)  # place(x=self.width - self.canvas_width)
 
         field_width = 100
         field_height = 100
@@ -46,7 +65,6 @@ class App(tk.Frame):
 
         self.drawer = self.get_drawer(501)
         self.redraw_field()
-        self.update()
 
     def set_drawer(self, _):
         seed = self.automate_seed_entry.get()
@@ -56,9 +74,10 @@ class App(tk.Frame):
         self.next_step()
 
     def update(self):
-        self.next_step()
-        self.redraw_field()
-        self.canvas.after(1, self.update)
+        if not self.is_paused:
+            self.next_step()
+            self.redraw_field()
+            self.canvas.after(1, self.update)
 
     def redraw_field(self):
         width = self.field.get_width()
@@ -102,3 +121,36 @@ class App(tk.Frame):
                 )
                 rectangles[y][x] = rectangle
         return rectangles
+
+    def pause(self):
+        self.is_paused = not self.is_paused
+        self.pause_button_text.set(START if self.is_paused else PAUSE)
+
+        self.update()
+
+    def screenshot(self):
+        initial_filename = self.get_screenshot_filename()
+        initial_path = os.path.join(os.getcwd(), initial_filename)
+        path = filedialog.asksaveasfilename(
+            initialdir=initial_path,
+            initialfile=initial_filename,
+            defaultextension=".png",
+            title="Save Screenshot",
+            filetypes=(("jpeg files", "*.jpg"),)
+        )
+        if path:
+            self.save_screenshot(path)
+        self.save_screenshot(initial_path)
+
+    def save_screenshot(self, path):
+        x = self.root.winfo_rootx() + self.canvas.winfo_x()
+        y = self.root.winfo_rooty() + self.canvas.winfo_y()
+        x1 = x + self.canvas.winfo_width()
+        y1 = y + self.canvas.winfo_height()
+        ImageGrab.grab().crop((x, y, x1, y1)).save(path)
+
+    def get_screenshot_filename(self):
+        return '{drawer}-{date}.png'.format(
+            drawer=self.drawer.__class__.__name__,
+            date=datetime.today().strftime('%m-%d-%Y')
+        )
