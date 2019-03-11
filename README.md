@@ -2,7 +2,7 @@
 
 ### Description
 
-Simple Implementation of (Cellular Automaton)[https://en.wikipedia.org/wiki/Cellular_automaton] (Frontal Cellular Automaton)
+Simple Implementation of [Cellular Automaton](https://en.wikipedia.org/wiki/Cellular_automaton) (Frontal Cellular Automaton)
 
 
 ### Installation
